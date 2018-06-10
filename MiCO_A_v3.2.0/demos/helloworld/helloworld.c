@@ -121,7 +121,7 @@ void tcp_client_thread( mico_thread_arg_t arg )
     {
         FD_ZERO( &readfds );
         FD_SET( fd, &readfds );
-/*
+
         FD_ZERO( &readfds_sem );
         FD_SET( semphr_fd, &readfds_sem );
         select( 24, &readfds_sem, NULL, NULL, NULL );
@@ -134,7 +134,7 @@ void tcp_client_thread( mico_thread_arg_t arg )
         	len = send( fd, inDataBuffer, recvlen, 0 );
             os_sem_log( "get semaphore" );
         }
-*/
+
   //          MicoUartSend(UART_FOR_APP, tempstr, strlen(tempstr));
 
 
@@ -276,8 +276,8 @@ void uartRecv_thread(uint32_t inContext)
 
 }
 
-
-/*create udp socket*/
+/*
+//create udp socket
 void udp_broadcast_thread( mico_thread_arg_t arg )
 {
     UNUSED_PARAMETER( arg );
@@ -289,7 +289,7 @@ void udp_broadcast_thread( mico_thread_arg_t arg )
     fd_set readfds_sem;
     int len = 0;
 
-    /*Establish a UDP port to receive any data sent to this port*/
+    //Establish a UDP port to receive any data sent to this port//
     udp_fd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
     require_action( IsValidSocket( udp_fd ), exit, err = kNoResourcesErr );
 
@@ -309,7 +309,7 @@ void udp_broadcast_thread( mico_thread_arg_t arg )
         addr.sin_family = AF_INET;
         addr.sin_addr.s_addr = INADDR_BROADCAST;
         addr.sin_port = htons( REMOTE_UDP_PORT );
-        /*the receiver should bind at port=20000*/
+        //the receiver should bind at port=20000/
 //        sendto( udp_fd, data, strlen( data ), 0, (struct sockaddr *) &addr, sizeof(addr) );
 
         FD_ZERO( &readfds_sem );
@@ -340,7 +340,7 @@ void udp_broadcast_thread( mico_thread_arg_t arg )
 	  }
     mico_rtos_delete_thread( NULL );
 }
-
+*/
 volatile ring_buffer_t rx_buffer;
 volatile uint8_t rx_data[UART_BUFFER_LENGTH];
 char* data_buf = "liuruirui test program 2018.6.6 time 23:00 ";
@@ -410,15 +410,15 @@ int application_start( void )
   /* Output on debug serial port */
   os_helloworld_log( "liuruirui test program 2018.6.6 time 23:00" );
 
-  //Start TCP server listener thread
- // err = mico_rtos_create_thread( NULL, MICO_APPLICATION_PRIORITY, "TCP_server", tcp_server_thread,
- //                                0x800,
- //                               0 );
- // require_noerr_string( err, exit, "ERROR: Unable to start the tcp server thread." );
+ // Start TCP server listener thread
+  err = mico_rtos_create_thread( NULL, MICO_APPLICATION_PRIORITY, "TCP_server", tcp_server_thread,
+                                 0x800,
+                                0 );
+  require_noerr_string( err, exit, "ERROR: Unable to start the tcp server thread." );
 
   //Start UDP server listener thread
-  err = mico_rtos_create_thread( NULL, MICO_APPLICATION_PRIORITY, "udp_broadcast", udp_broadcast_thread, 0x800, 0 );
-  require_noerr_string( err, exit, "ERROR: Unable to start the UDP thread." );
+//  err = mico_rtos_create_thread( NULL, MICO_APPLICATION_PRIORITY, "udp_broadcast", udp_broadcast_thread, 0x800, 0 );
+//  require_noerr_string( err, exit, "ERROR: Unable to start the UDP thread." );
 
   err = mico_rtos_init_semaphore( &os_sem, 1 ); //0/1 binary semaphore || 0/N semaphore
   require_noerr( err, exit );
