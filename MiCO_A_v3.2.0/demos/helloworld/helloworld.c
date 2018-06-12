@@ -98,6 +98,55 @@ size_t _uart_get_one_packet(uint8_t* inBuf, int inBufLen)
 	  }
 }
 
+void tcp_client_tx_thread( mico_thread_arg_t arg )
+{
+    OSStatus err = kNoErr;
+    int fd = (int) arg;
+    int len = 0;
+    fd_set readfds;
+    char *buf = NULL;
+    struct timeval t;
+
+    fd_set readfds_sem;
+
+
+    while ( 1 )
+    {
+
+        FD_ZERO( &readfds_sem );
+        FD_SET( semphr_fd, &readfds_sem );
+        select( 24, &readfds_sem, NULL, NULL, NULL );
+
+
+        if ( FD_ISSET( semphr_fd, &readfds_sem ) )
+        {
+            mico_rtos_get_semaphore( &os_sem, MICO_WAIT_FOREVER ); //wait until get semaphore
+            MicoGpioOutputTrigger( MICO_SYS_LED);
+        	len = send( fd, inDataBuffer, recvlen, 0 );
+            os_sem_log( "get semaphore" );
+        }
+
+    }
+
+	exit:
+    if ( err != kNoErr ) tcp_server_log( "TCP client thread exit with err: %d", err );
+    if ( buf != NULL ) free( buf );
+    SocketClose( &fd );
+
+    if ( os_sem != NULL )
+	  {
+		  mico_rtos_deinit_semaphore( &os_sem );
+	  }
+
+	  if( semphr_fd != -1 )
+	  {
+		  mico_rtos_deinit_event_fd( semphr_fd );
+	  }
+
+    mico_rtos_delete_thread( NULL );
+}
+
+
 void tcp_client_thread( mico_thread_arg_t arg )
 {
     OSStatus err = kNoErr;
@@ -121,7 +170,7 @@ void tcp_client_thread( mico_thread_arg_t arg )
     {
         FD_ZERO( &readfds );
         FD_SET( fd, &readfds );
-
+/*
         FD_ZERO( &readfds_sem );
         FD_SET( semphr_fd, &readfds_sem );
         select( 24, &readfds_sem, NULL, NULL, NULL );
@@ -134,31 +183,11 @@ void tcp_client_thread( mico_thread_arg_t arg )
         	len = send( fd, inDataBuffer, recvlen, 0 );
             os_sem_log( "get semaphore" );
         }
+*/
 
-  //          MicoUartSend(UART_FOR_APP, tempstr, strlen(tempstr));
+       require_action( select( fd+1, &readfds, NULL, NULL, &t) >= 0, exit, err = kConnectionErr );
 
-
-//            require_action( select( fd+1, &readfds, NULL, NULL, &t) >= 0, exit, err = kConnectionErr );
-
-//            if ( FD_ISSET( fd, &readfds ) ) //one client has data
-//            {
-//            	len = recv( fd, buf, 1024, 0 );
-//                require_action( len >= 0, exit, err = kConnectionErr );
-
-//                if ( len == 0 )
-//                {
-//                    tcp_server_log( "TCP Client is disconnected, fd: %d", fd );
-//                    goto exit;
-//                }
-
-//                len = send( fd, tempstr, strlen(tempstr), 0 );
-//              tcp_server_log("fd: %d, send data %d to client", fd, len);
-//            }
-        }
-
- /*       require_action( select( fd+1, &readfds, NULL, NULL, &t) >= 0, exit, err = kConnectionErr );
-
-        if ( FD_ISSET( fd, &r eadfds ) ) //one client has data
+        if ( FD_ISSET( fd, &readfds ) ) //one client has data
         {
         	len = recv( fd, buf, 1024, 0 );
             require_action( len >= 0, exit, err = kConnectionErr );
@@ -170,17 +199,16 @@ void tcp_client_thread( mico_thread_arg_t arg )
             }
 
             tcp_server_log("fd: %d, recv data %d from client", fd, len);
-            len = send( fd, buf, len, 0 );
-            tcp_server_log("fd: %d, send data %d to client", fd, len);
+            MicoUartSend(UART_FOR_APP, buf, len);
         }
-*/
-//    }
+
+    }
 
 	exit:
     if ( err != kNoErr ) tcp_server_log( "TCP client thread exit with err: %d", err );
     if ( buf != NULL ) free( buf );
     SocketClose( &fd );
-
+/*
     if ( os_sem != NULL )
 	  {
 		  mico_rtos_deinit_semaphore( &os_sem );
@@ -190,7 +218,7 @@ void tcp_client_thread( mico_thread_arg_t arg )
 	  {
 		  mico_rtos_deinit_event_fd( semphr_fd );
 	  }
-
+*/
     mico_rtos_delete_thread( NULL );
 }
 
@@ -236,6 +264,12 @@ void tcp_server_thread( mico_thread_arg_t arg )
                 if ( kNoErr
                      != mico_rtos_create_thread( NULL, MICO_APPLICATION_PRIORITY, "TCP Clients",
                                                  tcp_client_thread,
+                                                 0x800, client_fd ) )
+                    SocketClose( &client_fd );
+
+                if ( kNoErr
+                     != mico_rtos_create_thread( NULL, MICO_APPLICATION_PRIORITY, "TCP Clients Trans_tx",
+                                                 tcp_client_tx_thread,
                                                  0x800, client_fd ) )
                     SocketClose( &client_fd );
             }
