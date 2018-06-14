@@ -64,6 +64,15 @@ extern "C" {
 #define STACK_SIZE_LOCAL_TCP_CLIENT_THREAD    0x350
 #define STACK_SIZE_REMOTE_TCP_CLIENT_THREAD   0x500
 
+#define os_helloworld_log(format, ...)  custom_log("helloworld", format, ##__VA_ARGS__)
+#define tcp_server_log(M, ...) custom_log("TCP", M, ##__VA_ARGS__)
+#define os_sem_log(M, ...) custom_log("OS", M, ##__VA_ARGS__)
+#define uart_recv_log_trace() custom_log_trace("UART RECV")
+#define udp_unicast_log(M, ...) custom_log("UDP", M, ##__VA_ARGS__)
+#define udp_broadcast_log(M, ...) custom_log("UDP", M, ##__VA_ARGS__)
+#define uart_recv_log_trace() custom_log_trace("UART RECV")
+
+
 typedef struct _socket_msg {
   int ref;
   int len;
