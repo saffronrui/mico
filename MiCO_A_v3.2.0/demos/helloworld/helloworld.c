@@ -35,6 +35,7 @@
 #include "sci_APP.h"
 #include "net_APP.h"
 #include "sem_os_APP.h"
+#include "vfd.h"
 
 
 uint8_t *inDataBuffer;
@@ -82,6 +83,8 @@ int application_start( void )
   require_noerr( err, exit );
   err = app_sci_init();
   require_noerr_action( err, exit, os_helloworld_log("ERROR: Unable to start the uart recv thread.") );
+
+  mico_vfd_init();
 
   err = app_net_init();
   require_noerr_string( err, exit, "ERROR: Unable to start the tcp server thread." );
