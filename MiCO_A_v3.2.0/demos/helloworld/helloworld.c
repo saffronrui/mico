@@ -36,6 +36,7 @@
 #include "net_APP.h"
 #include "sem_os_APP.h"
 #include "vfd.h"
+#include "can.h"
 
 
 uint8_t *inDataBuffer;
@@ -85,6 +86,8 @@ int application_start( void )
   require_noerr_action( err, exit, os_helloworld_log("ERROR: Unable to start the uart recv thread.") );
 
   mico_vfd_init();
+
+  //CAN1_Mode_Init(CAN_SJW_1tq,CAN_BS2_6tq,CAN_BS1_7tq,6,CAN_Mode_LoopBack);
 
   err = app_net_init();
   require_noerr_string( err, exit, "ERROR: Unable to start the tcp server thread." );

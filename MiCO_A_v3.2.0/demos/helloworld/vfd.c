@@ -28,7 +28,7 @@ void mico_vfd_thread( mico_thread_arg_t arg ){
 	char temp_addr = 0x80;
 	char i = 0;
 
-		vfd_clear();
+	vfd_clear();		// clear vfd_display after system reset
 
 	while(1){
 
