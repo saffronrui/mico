@@ -27,6 +27,7 @@ NAME := App_Helloworld
 $(NAME)_SOURCES := helloworld.c \
 	sci_APP.c \
 	net_APP.c \
-	vfd.c
+	vfd.c	  \
+	can.c
 				   
 

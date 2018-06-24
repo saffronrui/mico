@@ -66,6 +66,11 @@ int application_start( void )
     app_context_t* app_context;
     mico_Context_t* mico_context;
 
+    uint8_t txbuf[10] = {1,2,3,4,5,6,7,8,9,10};
+    uint8_t	rxbuf[10];
+    int i = 0;
+    int data_len = 0;
+
     /* Create application context */
   app_context = (app_context_t *) calloc( 1, sizeof(app_context_t) );
   require_action( app_context, exit, err = kNoMemoryErr );
@@ -87,7 +92,7 @@ int application_start( void )
 
   mico_vfd_init();
 
-  //CAN1_Mode_Init(CAN_SJW_1tq,CAN_BS2_6tq,CAN_BS1_7tq,6,CAN_Mode_LoopBack);
+  CAN1_Mode_Init(CAN_SJW_1tq,CAN_BS2_6tq,CAN_BS1_7tq,6,CAN_Mode_LoopBack);
 
   err = app_net_init();
   require_noerr_string( err, exit, "ERROR: Unable to start the tcp server thread." );
@@ -95,8 +100,20 @@ int application_start( void )
 
   while(1)
   {
+	  CAN1_Send_Msg(txbuf,10);
 	  MicoGpioOutputTrigger( MICO_SYS_LED);
-	  mico_thread_msleep(300);
+	  mico_thread_msleep(500);
+	  data_len = CAN1_Receive_Msg(rxbuf);
+	  	  os_sem_log("data_len is %d", i);
+	  if( data_len > 0 ){
+		  for( i = 0; i < data_len; i++)
+			  os_sem_log("%d", rxbuf[i]);
+	  }
+	  else {
+		  os_sem_log("No data is received");
+	  }
+
+	  mico_thread_msleep(500);
   }
 
   exit:
